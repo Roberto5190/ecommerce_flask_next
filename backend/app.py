@@ -1,18 +1,18 @@
-# backend/app.py  (solo para la prueba, luego lo quitaremos)
-import sqlite3, pathlib
+from flask import Flask
+from database import db, DBHandler
+from models import User, Product
 
-BASE_DIR = pathlib.Path(__file__).resolve().parent        # .../backend
-DB_DIR   = BASE_DIR / "database"
+app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+db.init_app(app)
 
-db_path  = DB_DIR / "test.db"
-sql_path = DB_DIR / "schema.sql"
+with app.app_context():
+    db.create_all()
 
-conn = sqlite3.connect(db_path)
-with sql_path.open("r", encoding="utf-8") as f:
-    conn.executescript(f.read())
+    user = DBHandler.add(User(username="bob", email="bob@example.com", password="hash"))
+    pen  = DBHandler.add(Product(name="Bolígrafo", price=1.5, stock=20))
+    order = DBHandler.create_order(user=user, items=[{"product": pen, "quantity": 3}])
 
-tables = [row[0] for row in conn.execute(
-    "SELECT name FROM sqlite_master WHERE type='table';"
-)]
-conn.close()
-print("✓ Tablas creadas:", tables)
+    print("Pedido:", order)
+    print("Items :", order.items)
+    print("Stock restante:", pen.stock)
