@@ -5,7 +5,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # .../Desktop/ecommerce_flask_next/backend
 ENV_PATH = BASE_DIR / '.env'  #/home/usuario/proyecto/backend/.env
-load_dotenv(load_dotenv=ENV_PATH)
+load_dotenv(dotenv_path=ENV_PATH)
 
 class Config:
     #Base

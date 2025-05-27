@@ -2,6 +2,9 @@ from datetime import datetime
 from decimal import Decimal
 from database import db
 
+
+ALLOWED_STATUS = {"pending", "paid", "shipped", "completed", "cancelled"}
+
 class Order(db.Model):
     __tablename__ = "orders"
 
@@ -14,8 +17,16 @@ class Order(db.Model):
     user        = db.relationship("User", back_populates="orders")
     items       = db.relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 
+    # setter con validación
+    def set_status(self, new_status: str):
+        if new_status not in ALLOWED_STATUS:
+            raise ValueError(f"Estado '{new_status}' no permitido")
+        self.status = new_status
+
     def __repr__(self) -> str:
         return f"<Order {self.id} – {self.status}>"
+
+
 
 class OrderItem(db.Model):
     __tablename__ = "order_items"

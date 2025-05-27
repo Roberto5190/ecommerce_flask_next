@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from database import db
+from utils.validators import positive_price, positive_int
 
 class Product(db.Model):
     __tablename__ = "products"
@@ -14,5 +15,12 @@ class Product(db.Model):
 
     order_items = db.relationship("OrderItem", back_populates="product")
 
+
+    # validación antes de insertar/actualizar
+    def clean(self):
+        self.price = positive_price(self.price)
+        self.stock = positive_int(self.stock)
+    
+    
     def __repr__(self) -> str:
         return f"<Product {self.name} (${self.price})>"
