@@ -1,13 +1,18 @@
-from flask import Flask
-from sqlalchemy import inspect          
-from database import db
-from models import User, Product, Order, OrderItem
+# backend/app.py  (solo para la prueba, luego lo quitaremos)
+import sqlite3, pathlib
 
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-db.init_app(app)
+BASE_DIR = pathlib.Path(__file__).resolve().parent        # .../backend
+DB_DIR   = BASE_DIR / "database"
 
-with app.app_context():
-    db.create_all()
-    inspector = inspect(db.engine)
-    print("✓ Tablas creadas en memoria:", inspector.get_table_names())
+db_path  = DB_DIR / "test.db"
+sql_path = DB_DIR / "schema.sql"
+
+conn = sqlite3.connect(db_path)
+with sql_path.open("r", encoding="utf-8") as f:
+    conn.executescript(f.read())
+
+tables = [row[0] for row in conn.execute(
+    "SELECT name FROM sqlite_master WHERE type='table';"
+)]
+conn.close()
+print("✓ Tablas creadas:", tables)
