@@ -13,6 +13,7 @@ def register():
             username=data["username"],
             email=data["email"],
             raw_password=data["password"],
+            is_admin=data.get("is_admin", False)
         )
         DBHandler.add(user)
         return jsonify({"msg": "Registro ok"}), 201
@@ -25,5 +26,9 @@ def login():
     user = User.query.filter_by(email=data["email"].lower()).first()
     if not user or not user.check_password(data["password"]):
         return jsonify({"msg": "Credenciales incorrectas"}), 401
-    token = generate_jwt({"sub": user.id, "username": user.username})
+    token = generate_jwt({
+        "sub": str(user.id), 
+        "username": user.username,
+        "is_admin": user.is_admin
+        })
     return jsonify({"token": token})

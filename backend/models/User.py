@@ -1,7 +1,7 @@
 from datetime import datetime
 from database import db
 from utils.validators import email as validate_email, password_strength
-from utils.security import hash_password, verify_password
+from utils.password import hash_password, verify_password
 
 
 
