@@ -1,27 +1,30 @@
-
 from flask import Flask
+from flask_cors import CORS
 from database import db
-from models import User, Product
+from config.settings import Config
+from api import auth as auth_bp, products as prod_bp, orders as ord_bp  # noqa
 
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-db.init_app(app)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
 
-with app.app_context():
-    db.create_all()
+    # extensiones
+    db.init_app(app)
+    CORS(app, origins=Config.CORS_ORIGINS)
 
-    # usuario con pwd en claro → debe hash-earse
-    u = User.create("carlos", "carlos@correo.com", "supersecreto")
-    db.session.add(u); db.session.commit()
-    assert u.check_password("supersecreto") is True
-    assert u.password.startswith("$2b$"), "No se hashéo con bcrypt"
+    # blueprints
+    app.register_blueprint(auth_bp.bp_auth)
+    app.register_blueprint(prod_bp.bp_products)
+    app.register_blueprint(ord_bp.bp_orders)
 
-    # producto con precio negativo → debe lanzar error
-    from decimal import Decimal
-    try:
-        p = Product(name="Prueba", price=Decimal("-1.00"), stock=5)
-        p.clean()
-    except ValueError as e:
-        print("✓ Validación capturada:", e)
+    @app.route("/ping")
+    def ping():
+        return {"msg": "pong"}
 
-    print("✓ Checkpoint completado sin tracebacks")
+    return app
+
+if __name__ == "__main__":
+    app = create_app()
+    with app.app_context():
+        db.create_all()
+    app.run(port=5000, debug=Config.DEBUG)
